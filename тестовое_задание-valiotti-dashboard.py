@@ -1,4 +1,4 @@
-# Run this app with `тестовое_задание-valiotti.py` and
+# Run this app with `python app.py` and
 # visit http://127.0.0.1:8050/ in your web browser.
 
 import os
@@ -27,16 +27,14 @@ def is_digit(s):
         return False
 
 
+# DATA
+
 app = dash.Dash(external_stylesheets=["assets/html-components.css", dbc.themes.BOOTSTRAP])
 
-# DATA
-url = 'https://drive.google.com/uc?export=download&id=19uU-EGF3bqhWV_37Vap7INAFnH1Zxqeg'
-
-df = pd.read_csv(url)
+df = pd.read_csv(os.path.join(os.path.dirname(__file__), 'games.csv'))
 df.Year_of_Release = df.Year_of_Release.apply(lambda x: int(x) if is_digit(x) else None)
 df.User_Score = df.User_Score.apply(lambda x: float(x) if is_number(x) else None)
 df = df.dropna(axis=0).query('Year_of_Release >= 2000')
-
 df.Year_of_Release = df.Year_of_Release.astype('int64')
 
 # CORE ELEMENTS
@@ -163,10 +161,10 @@ def update(genres_input, rating_input, year_range_input):
                      & Year_of_Release >= {year_range_input[0]} \
                      & Year_of_Release <= {year_range_input[1]}""")
 
-    df1 = pd.DataFrame.from_records(df2.groupby(['Platform', 'Year_of_Release']).count().to_records()) \
-        .drop(columns=['Genre', 'Critic_Score', 'User_Score', 'Rating']) \
-        .rename(columns={'Name': 'Num_Games'}) \
-        .query("Num_Games > 0")
+    df1 = df2.groupby(['Platform', 'Year_of_Release']).count() \
+             .reset_index() \
+             .drop(columns=['Genre', 'Critic_Score', 'User_Score', 'Rating']) \
+             .rename(columns={'Name': 'Num_Games'})
 
     num_games = len(df2)
 
